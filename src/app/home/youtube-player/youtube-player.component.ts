@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
+
+import * as Plyr from 'plyr';
 
 @Component({
   selector: 'app-youtube-player',
@@ -6,9 +8,20 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./youtube-player.component.scss'],
 })
 export class YoutubePlayerComponent implements OnInit {
+  @Input() src: string;
+  @ViewChild('player', { static: true }) player: ElementRef;
+  loading: boolean = true;
 
-  constructor() { }
+  constructor(public renderer: Renderer2) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.renderer.setAttribute(this.player.nativeElement, 'data-plyr-provider', 'youtube');
+    this.renderer.setAttribute(this.player.nativeElement, 'data-plyr-embed-id', this.src);
 
+    const player = new Plyr(this.player.nativeElement);
+
+    player.on('ready', (event) => {
+      this.loading = false;
+    });
+  }
 }

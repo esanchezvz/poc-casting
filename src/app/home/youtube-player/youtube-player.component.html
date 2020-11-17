@@ -1,3 +1,6 @@
-<p>
-  youtube-player works!
-</p>
+<div [style.visibility]="loading ? 'hidden' : ''" [style.max-height]="loading ? '0px' : ''">
+  <div #player class="player"></div>
+</div>
+<div *ngIf="loading" fxLayout="row" fxLayoutAlign="center center" class="spinner">
+  <ion-spinner name="crescent"></ion-spinner>
+</div>
