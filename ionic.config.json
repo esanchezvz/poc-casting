@@ -1,5 +1,7 @@
 {
   "name": "poc-cast",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }
