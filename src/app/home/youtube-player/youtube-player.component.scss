@@ -1,0 +1,9 @@
+::ng-deep {
+  #castButton {
+    display: none !important;
+  }
+
+  #castButton.active {
+    display: inline-flex !important;
+  }
+}
