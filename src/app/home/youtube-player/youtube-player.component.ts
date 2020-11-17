@@ -1,12 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  Input,
-  OnDestroy,
-  OnInit,
-  Renderer2,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, Input, OnInit, Renderer2, ViewChild } from '@angular/core';
 
 import { playerControls, castConnectedIcon, castIcon } from './constants';
 import * as Plyr from 'plyr';
@@ -16,7 +8,7 @@ import * as Plyr from 'plyr';
   templateUrl: './youtube-player.component.html',
   styleUrls: ['./youtube-player.component.scss'],
 })
-export class YoutubePlayerComponent implements OnInit, OnDestroy {
+export class YoutubePlayerComponent implements OnInit {
   @Input() src: string;
   @ViewChild('player', { static: true }) player: ElementRef;
   loading: boolean = true;
@@ -25,10 +17,6 @@ export class YoutubePlayerComponent implements OnInit, OnDestroy {
   castButton: HTMLButtonElement;
 
   constructor(public renderer: Renderer2) {}
-
-  ngOnDestroy() {
-    this.castButton.removeEventListener('click', () => this.setCasting());
-  }
 
   ngOnInit() {
     this.renderer.setAttribute(this.player.nativeElement, 'data-plyr-provider', 'youtube');
