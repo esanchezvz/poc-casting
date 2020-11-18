@@ -5,6 +5,5 @@
 <div *ngIf="loading" fxLayout="row" fxLayoutAlign="center center" class="spinner">
   <ion-spinner name="crescent"></ion-spinner>
 </div>
-<p>{{ isCastEnabled ? 'Enabled' : 'Disabled' }}</p>
-<p>{{ isCasting ? 'Casting' : 'Not Casting' }}</p>
-<ion-button (click)="toggleCastActive()">Toggle</ion-button>
+<p>{{ castService.castEnabled ? 'Enabled' : 'Disabled' }}</p>
+<p>{{ castService.isCasting ? 'Casting' : 'Not Casting' }}</p>
