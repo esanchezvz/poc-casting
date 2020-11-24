@@ -16,7 +16,13 @@ export class CastService {
 
   constructor() {}
 
-  setParams({ videoId, startSeconds }: { videoId: string; startSeconds: number }) {
+  setParams({
+    videoId,
+    startSeconds,
+  }: {
+    videoId: string;
+    startSeconds: number;
+  }) {
     this.videoId = videoId;
     this.startSeconds = startSeconds;
   }
@@ -29,7 +35,8 @@ export class CastService {
     const apiConfig = new chrome.cast.ApiConfig(
       new chrome.cast.SessionRequest(this.receiverId),
       (session: any) => {
-        console.log(session);
+        this.castSession = session;
+        if (this.castSession.status === 'connected') this.isCasting = true;
       },
       function (receiverAvailable: any) {
         console.log(receiverAvailable);
@@ -41,7 +48,7 @@ export class CastService {
       () => {
         this.castEnabled = true;
       },
-      function (err: any) {
+      (err: any) => {
         alert(JSON.stringify(err, null, 2));
       }
     );
@@ -54,15 +61,18 @@ export class CastService {
         this.castSession = session;
         this.loadYoutubeVideo();
         callback();
-        // alert(JSON.stringify(this.castSession));
       },
       (err: any) => {
-        this.isCasting = false;
-        this.castSession = null;
         callback();
 
-        // if (err.code === 'cancel') return;
-        // alert(JSON.stringify(err, null, 2));
+        
+        if (this.castSession && this.castSession.status === 'connected') return;
+
+
+        this.castSession = null;
+        this.isCasting = false;
+        
+        console.log(err);
       }
     );
   }
@@ -79,10 +89,15 @@ export class CastService {
     );
   }
 
+  sendMessage(data: any) {
+    this.castSession.sendMessage(this.namespace, data);
+  }
+
   private loadYoutubeVideo() {
     this.castSession.sendMessage(this.namespace, {
-      command: 'INIT_COMMUNICATION_CONSTANTS',
+      command: 'INIT_COMMUNICATION',
       videoId: this.videoId,
+      // TODO - Get seconds from player to init video (Dont do it if its live stream)
       startSeconds: 0,
     });
     this.isCasting = true;

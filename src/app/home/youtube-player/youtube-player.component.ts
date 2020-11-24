@@ -14,7 +14,6 @@ export class YoutubePlayerComponent implements OnInit {
   @ViewChild('player', { static: true }) player: ElementRef;
   loading: boolean = true;
   castButton: HTMLButtonElement;
-  cast: any;
 
   constructor(public renderer: Renderer2, public castService: CastService) {}
 
@@ -22,7 +21,6 @@ export class YoutubePlayerComponent implements OnInit {
     this.castService.setParams({ videoId: this.src, startSeconds: 0 });
     document.addEventListener('deviceready', () => {
       this.castService.initCast();
-      this.cast = this.castService.getCast();
     });
 
     this.renderer.setAttribute(this.player.nativeElement, 'data-plyr-provider', 'youtube');
@@ -32,18 +30,28 @@ export class YoutubePlayerComponent implements OnInit {
       controls: () => playerControls,
     });
 
+    // Initialize player + casting config
     player.on('ready', (event) => {
       this.loading = false;
       this.castButton = <HTMLButtonElement>document.getElementById('castButton');
+      if (this.castService.isCasting) {
+        setTimeout(() => {
+          this.castButton.innerHTML = castConnectedIcon;
+          this.castButton.blur();
+        }, 0);
+      }
+
       this.castButton.addEventListener('click', (e) => {
         this.castService.requestSession(() => {
-          this.castButton.blur(); // Loose focus to update DOM
+          this.castButton.blur(); // Loose focus to update casting button 
 
+          // FIXME - not updating icon when stopping session
           if (this.castService.isCasting) {
             this.castButton.innerHTML = castConnectedIcon;
           } else {
             this.castButton.innerHTML = castIcon;
           }
+          
         });
       });
 
@@ -52,6 +60,17 @@ export class YoutubePlayerComponent implements OnInit {
       } else {
         this.castButton.classList.remove('disabled');
         this.castButton.innerHTML = castIcon;
+      }
+    });
+
+    
+    player.on('volumechange', (event) => {
+      if (this.castService.isCasting && event.detail.plyr.muted) {
+        console.log('Should mute cast video!')
+        this.castService.sendMessage({command: 'MUTE_VIDEO'});
+      } else if(this.castService.isCasting && !event.detail.plyr.muted) {
+        console.log('Should un-mute cast video!')
+        this.castService.sendMessage({command: 'UNMUTE_VIDEO'});
       }
     });
   }
