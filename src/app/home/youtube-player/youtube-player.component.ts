@@ -14,6 +14,7 @@ export class YoutubePlayerComponent implements OnInit {
   @ViewChild('player', { static: true }) player: ElementRef;
   loading: boolean = true;
   castButton: HTMLButtonElement;
+  castPlaying: false;
 
   constructor(public renderer: Renderer2, public castService: CastService) {}
 
