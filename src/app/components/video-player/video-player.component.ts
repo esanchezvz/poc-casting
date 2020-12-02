@@ -1,5 +1,6 @@
 import {
   Component,
+  DoCheck,
   ElementRef,
   Input,
   OnInit,
@@ -7,7 +8,7 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import { playerControls, castConnectedIcon, castIcon } from './constants';
+import { playerControls, castIcon } from './constants';
 import * as Plyr from 'plyr';
 import { CastService } from '../../services/cast.service';
 
@@ -16,20 +17,22 @@ import { CastService } from '../../services/cast.service';
   templateUrl: './video-player.component.html',
   styleUrls: ['./video-player.component.scss'],
 })
-export class VideoPlayerComponent implements OnInit {
+export class VideoPlayerComponent implements OnInit, DoCheck {
   @Input() src: string;
   @Input() provider: string;
   @ViewChild('player', { static: true }) player: ElementRef;
   loading: boolean = true;
   castButton: HTMLButtonElement;
-  castPlaying: false;
+  isCasting: boolean;
+  receiverMuted: boolean;
 
   constructor(public renderer: Renderer2, public castService: CastService) {}
 
   ngOnInit() {
-    this.castService.setParams({ videoId: this.src, startSeconds: 0 });
+    this.castService.setParams({ videoId: this.src, startSeconds: 0, provider: this.provider });
     document.addEventListener('deviceready', () => {
       this.castService.initCast();
+      this.isCasting = this.castService.isCasting;
     });
 
     this.renderer.setAttribute(
@@ -53,23 +56,29 @@ export class VideoPlayerComponent implements OnInit {
       this.castButton = <HTMLButtonElement>(
         document.getElementById('castButton')
       );
+      const controls = document.querySelectorAll('.plyr__controls');
+
       if (this.castService.isCasting) {
         setTimeout(() => {
-          this.castButton.innerHTML = castConnectedIcon;
-          this.castButton.blur();
+          this.receiverMuted = this.castService.castSession.receiver.volume.muted;
+          this.castService.updateReceiverPlayerState('playing');
+          localStorage.setItem('receiverPlayerState', 'playing');
+          controls.forEach(item => {
+            item.classList.add('hide');
+          });
+        }, 0);
+      } else {
+        setTimeout(() => {
+          this.receiverMuted = false;
+          controls.forEach(item => {
+            item.classList.remove('hide');
+          });
         }, 0);
       }
 
       this.castButton.addEventListener('click', (e) => {
         this.castService.requestSession(() => {
-          this.castButton.blur(); // Loose focus to update casting button
-
-          // FIXME - not updating icon when stopping session
-          if (this.castService.isCasting) {
-            this.castButton.innerHTML = castConnectedIcon;
-          } else {
-            this.castButton.innerHTML = castIcon;
-          }
+          this.castButton.blur();
         });
       });
 
@@ -80,15 +89,60 @@ export class VideoPlayerComponent implements OnInit {
         this.castButton.classList.add('disabled');
       }
     });
+  }
 
-    player.on('volumechange', (event) => {
-      if (this.castService.isCasting && event.detail.plyr.muted) {
-        console.log('Should mute cast video!');
-        this.castService.sendMessage({ command: 'MUTE_VIDEO' });
-      } else if (this.castService.isCasting && !event.detail.plyr.muted) {
-        console.log('Should un-mute cast video!');
-        this.castService.sendMessage({ command: 'UNMUTE_VIDEO' });
+  ngDoCheck() {
+    if (this.isCasting !== this.castService.isCasting) {
+      this.isCasting = this.castService.isCasting;
+      const controls = document.querySelectorAll('.plyr__controls');
+      
+      if (controls && this.castService.isCasting) {
+        // console.log('controls should be hidden');
+        controls.forEach(item => {
+          item.classList.add('hide');
+        });
+      } else if (controls && !this.castService.isCasting) {
+        // console.log('controls should be visible');
+        controls.forEach(item => {
+          item.classList.remove('hide');
+        });
       }
-    });
+    }
+  }
+
+  stopSession() {
+    if (confirm('¿Seguro que deseas salir de cast?')) {
+      this.castService.stopSession();
+    }
+  }
+
+  toggleMuteReceiver() {
+    const isMuted: boolean = this.castService.castSession.receiver.volume.muted;
+
+    this.receiverMuted = !isMuted;
+
+    this.castService.castSession.setReceiverMuted(
+      isMuted ? false : true,
+      () => {
+        // console.log( this.receiverMuted ? 'Receiver muted' : 'Receiver unmuted')
+        // console.log({receiverMuted: this.receiverMuted, });
+      },
+      (err: any) => {
+        console.error(err)
+      }
+    )
+  }
+
+  toggleReceiverPlay() {
+    if (this.castService.receiverPlayerState === 'paused') {
+      this.castService.updateReceiverPlayerState('playing');
+      this.castService.sendMessage({command: 'PLAY_VIDEO'});
+    } else if (this.castService.receiverPlayerState === 'playing') {
+      this.castService.updateReceiverPlayerState('paused');
+      this.castService.sendMessage({command: 'PAUSE_VIDEO'});
+    } else if (!this.castService.receiverPlayerState && this.castService.isCasting) {
+      this.castService.updateReceiverPlayerState('paused');
+      this.castService.sendMessage({command: 'PAUSE_VIDEO'});
+    }
   }
 }

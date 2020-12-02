@@ -7,6 +7,7 @@ declare const chrome: any;
 })
 export class CastService {
   videoId: string;
+  provider: string;
   startSeconds: number;
   receiverId = '11CC3BE6';
   namespace = 'urn:x-cast:dev.esanchezvz.custom-cast-test';
@@ -14,18 +15,14 @@ export class CastService {
   isCasting = false;
   castSession: any;
   receiverAvailable: boolean = false;
+  receiverPlayerState: string | null = null;
 
   constructor() {}
 
-  setParams({
-    videoId,
-    startSeconds,
-  }: {
-    videoId: string;
-    startSeconds: number;
-  }) {
+  setParams({  videoId, startSeconds, provider  }: Params) {
     this.videoId = videoId;
     this.startSeconds = startSeconds;
+    this.provider = provider;
   }
 
   getCast() {
@@ -37,6 +34,10 @@ export class CastService {
       new chrome.cast.SessionRequest(this.receiverId),
       (session: any) => {
         this.castSession = session;
+        console.log(this.castSession);
+        if (localStorage.getItem('receiverPlayerState')) {
+          this.receiverPlayerState = localStorage.getItem('receiverPlayerState');
+        }
         if (this.castSession.status === 'connected') this.isCasting = true;
       },
       (receiverAvailable: 'available' | 'unavailable') => {
@@ -44,19 +45,21 @@ export class CastService {
         else this.receiverAvailable = false;
 
         if (this.castSession && !this.receiverAvailable) this.stopSession();
-        console.log({  receiverAvailable  });
+        console.log({ receiverAvailable });
       }
     );
 
-    chrome.cast.initialize(
-      apiConfig,
-      () => {
-        this.castEnabled = true;
-      },
-      (err: any) => {
-        alert(JSON.stringify(err, null, 2));
-      }
-    );
+    if (!this.isCasting) {
+      chrome.cast.initialize(
+        apiConfig,
+        () => {
+          this.castEnabled = true;
+        },
+        (err: any) => {
+          alert(JSON.stringify(err, null, 2));
+        }
+      );
+    }
   }
 
   requestSession(callback: Function) {
@@ -65,7 +68,7 @@ export class CastService {
       (session: any) => {
         console.log(session);
         this.castSession = session;
-        this.loadYoutubeVideo();
+        this.loadVideo();
         callback();
       },
       (err: any) => {
@@ -76,15 +79,17 @@ export class CastService {
 
         this.castSession = null;
         this.isCasting = false;
+        localStorage.removeItem('receiverPlayerState');
       }
     );
   }
 
   stopSession() {
+    this.isCasting = false;
     this.castSession.stop(
       () => {
-        this.isCasting = false;
         this.castSession = null;
+        localStorage.removeItem('receiverPlayerState');
       },
       (err: any) => {
         alert(JSON.stringify(err, null, 2));
@@ -96,22 +101,25 @@ export class CastService {
     this.castSession.sendMessage(this.namespace, data);
   }
 
-  private loadYoutubeVideo() {
+  private loadVideo() {
     this.castSession.sendMessage(this.namespace, {
       command: 'INIT_COMMUNICATION',
       videoId: this.videoId,
       // TODO - Get seconds from player to init video (Dont do it if its live stream)
       startSeconds: 0,
+      provider: this.provider
     });
     this.isCasting = true;
   }
 
-  scanForRoutes() {
-    chrome.cast.cordova.scanForRoutes(
-      (routes: any) => {
-        console.log(routes);
-      },
-      (err: any) => console.error(err)
-    );
+  updateReceiverPlayerState(state: string) {
+    this.receiverPlayerState = state;
+    localStorage.setItem('receiverPlayerState', state);
   }
 }
+
+interface Params {
+  videoId: string;
+  startSeconds: number;
+  provider: string
+};

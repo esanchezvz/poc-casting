@@ -12,19 +12,32 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgb(0, 0, 0, 0.54);
+    background-color: rgb(0, 0, 0, 0.64);
     display: flex;
     flex-direction: column;
 
     .icon {
       cursor: pointer;
       color: white;
+      width: 24px;
       
       &__play {
-        width: 32px;
+        width: 65px;
         align-self: center;
         justify-self: center;
-        flex-grow: 1;
+        margin: 0 40px;
+      }
+
+      &__cast {
+        margin: 10px 15px 0px 0px;
+      }
+
+      &__mute {
+        margin: 0px 15px 15px 0px;
+      }
+
+      &__skip {
+        width: 45px;
       }
     }
   }
@@ -38,4 +51,12 @@
   &__reverse {
     flex-direction: row-reverse;
   }
+
+  &__center {
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+  }
 }
+
+
