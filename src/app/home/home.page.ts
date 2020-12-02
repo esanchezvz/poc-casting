@@ -7,6 +7,7 @@ import { Component } from '@angular/core';
 })
 export class HomePage {
   public videoId = 'z6EchXyieos';
+  public provider: 'youtube' | 'vimeo' = 'youtube';
 
   constructor() {}
 }

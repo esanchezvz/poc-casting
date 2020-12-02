@@ -18,6 +18,7 @@
 
     .icon {
       cursor: pointer;
+      color: white;
       
       &__play {
         width: 32px;
@@ -26,5 +27,15 @@
         flex-grow: 1;
       }
     }
+  }
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  &__reverse {
+    flex-direction: row-reverse;
   }
 }

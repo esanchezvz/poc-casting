@@ -7,10 +7,18 @@ const routes: Routes = [
     loadChildren: () => import('./home/home.module').then( m => m.HomePageModule)
   },
   {
+    path: 'youtube',
+    loadChildren: () => import('./youtube/youtube.module').then( m => m.YoutubePageModule)
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'
   },
+  {
+    path: 'vimeo',
+    loadChildren: () => import('./vimeo/vimeo.module').then( m => m.VimeoPageModule)
+  }
 ];
 
 @NgModule({

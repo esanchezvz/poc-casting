@@ -13,6 +13,7 @@ export class CastService {
   castEnabled = false;
   isCasting = false;
   castSession: any;
+  receiverAvailable: boolean = false;
 
   constructor() {}
 
@@ -38,8 +39,12 @@ export class CastService {
         this.castSession = session;
         if (this.castSession.status === 'connected') this.isCasting = true;
       },
-      function (receiverAvailable: any) {
-        console.log(receiverAvailable);
+      (receiverAvailable: 'available' | 'unavailable') => {
+        if (receiverAvailable === 'available') this.receiverAvailable = true;
+        else this.receiverAvailable = false;
+
+        if (this.castSession && !this.receiverAvailable) this.stopSession();
+        console.log({  receiverAvailable  });
       }
     );
 
@@ -58,21 +63,19 @@ export class CastService {
     // TODO Refactor callback into a cast status observer to subscribe on player
     chrome.cast.requestSession(
       (session: any) => {
+        console.log(session);
         this.castSession = session;
         this.loadYoutubeVideo();
         callback();
       },
       (err: any) => {
         callback();
+        console.log(err);
 
-        
         if (this.castSession && this.castSession.status === 'connected') return;
-
 
         this.castSession = null;
         this.isCasting = false;
-        
-        console.log(err);
       }
     );
   }
@@ -101,5 +104,14 @@ export class CastService {
       startSeconds: 0,
     });
     this.isCasting = true;
+  }
+
+  scanForRoutes() {
+    chrome.cast.cordova.scanForRoutes(
+      (routes: any) => {
+        console.log(routes);
+      },
+      (err: any) => console.error(err)
+    );
   }
 }
