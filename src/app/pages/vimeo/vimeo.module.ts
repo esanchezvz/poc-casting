@@ -7,7 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { VimeoPageRoutingModule } from './vimeo-routing.module';
 
 import { VimeoPage } from './vimeo.page';
-import { VideoPlayerComponent } from '../components/video-player/video-player.component';
+import { VideoPlayerComponent } from '../../components/video-player/video-player.component';
 
 @NgModule({
   imports: [CommonModule, FormsModule, IonicModule, VimeoPageRoutingModule],

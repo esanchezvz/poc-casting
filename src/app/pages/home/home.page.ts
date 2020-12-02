@@ -6,8 +6,5 @@ import { Component } from '@angular/core';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
-  public videoId = 'z6EchXyieos';
-  public provider: 'youtube' | 'vimeo' = 'youtube';
-
   constructor() {}
 }

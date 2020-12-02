@@ -4,11 +4,11 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: 'home',
-    loadChildren: () => import('./home/home.module').then( m => m.HomePageModule)
+    loadChildren: () => import('./pages/home/home.module').then( m => m.HomePageModule)
   },
   {
     path: 'youtube',
-    loadChildren: () => import('./youtube/youtube.module').then( m => m.YoutubePageModule)
+    loadChildren: () => import('./pages/youtube/youtube.module').then( m => m.YoutubePageModule)
   },
   {
     path: '',
@@ -17,7 +17,7 @@ const routes: Routes = [
   },
   {
     path: 'vimeo',
-    loadChildren: () => import('./vimeo/vimeo.module').then( m => m.VimeoPageModule)
+    loadChildren: () => import('./pages/vimeo/vimeo.module').then( m => m.VimeoPageModule)
   }
 ];
 
