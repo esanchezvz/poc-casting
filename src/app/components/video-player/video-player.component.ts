@@ -29,7 +29,11 @@ export class VideoPlayerComponent implements OnInit, DoCheck {
   constructor(public renderer: Renderer2, public castService: CastService) {}
 
   ngOnInit() {
-    this.castService.setParams({ videoId: this.src, startSeconds: 0, provider: this.provider });
+    this.castService.setParams({
+      videoId: this.src,
+      startSeconds: 0,
+      provider: this.provider,
+    });
     document.addEventListener('deviceready', () => {
       this.castService.initCast();
       this.isCasting = this.castService.isCasting;
@@ -63,14 +67,14 @@ export class VideoPlayerComponent implements OnInit, DoCheck {
           this.receiverMuted = this.castService.castSession.receiver.volume.muted;
           this.castService.updateReceiverPlayerState('playing');
           localStorage.setItem('receiverPlayerState', 'playing');
-          controls.forEach(item => {
+          controls.forEach((item) => {
             item.classList.add('hide');
           });
         }, 0);
       } else {
         setTimeout(() => {
           this.receiverMuted = false;
-          controls.forEach(item => {
+          controls.forEach((item) => {
             item.classList.remove('hide');
           });
         }, 0);
@@ -95,15 +99,15 @@ export class VideoPlayerComponent implements OnInit, DoCheck {
     if (this.isCasting !== this.castService.isCasting) {
       this.isCasting = this.castService.isCasting;
       const controls = document.querySelectorAll('.plyr__controls');
-      
+
       if (controls && this.castService.isCasting) {
         // console.log('controls should be hidden');
-        controls.forEach(item => {
+        controls.forEach((item) => {
           item.classList.add('hide');
         });
       } else if (controls && !this.castService.isCasting) {
         // console.log('controls should be visible');
-        controls.forEach(item => {
+        controls.forEach((item) => {
           item.classList.remove('hide');
         });
       }
@@ -128,21 +132,32 @@ export class VideoPlayerComponent implements OnInit, DoCheck {
         // console.log({receiverMuted: this.receiverMuted, });
       },
       (err: any) => {
-        console.error(err)
+        console.error(err);
       }
-    )
+    );
   }
 
   toggleReceiverPlay() {
     if (this.castService.receiverPlayerState === 'paused') {
       this.castService.updateReceiverPlayerState('playing');
-      this.castService.sendMessage({command: 'PLAY_VIDEO'});
+      this.castService.sendMessage({ command: 'PLAY_VIDEO' });
     } else if (this.castService.receiverPlayerState === 'playing') {
       this.castService.updateReceiverPlayerState('paused');
-      this.castService.sendMessage({command: 'PAUSE_VIDEO'});
-    } else if (!this.castService.receiverPlayerState && this.castService.isCasting) {
+      this.castService.sendMessage({ command: 'PAUSE_VIDEO' });
+    } else if (
+      !this.castService.receiverPlayerState &&
+      this.castService.isCasting
+    ) {
       this.castService.updateReceiverPlayerState('paused');
-      this.castService.sendMessage({command: 'PAUSE_VIDEO'});
+      this.castService.sendMessage({ command: 'PAUSE_VIDEO' });
     }
+  }
+
+  forwardReceiver() {
+    this.castService.sendMessage({ command: 'FORWARD' });
+  }
+
+  rewindReceiver() {
+    this.castService.sendMessage({ command: 'REWIND' });
   }
 }

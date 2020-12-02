@@ -6,9 +6,9 @@
     </div>
 
     <div class="row row__center">
-      <img class="icon icon__skip" src="/assets/img/backward.svg" alt="back 10 seconds">
+      <img (click)="rewindReceiver()" class="icon icon__skip" src="/assets/img/backward.svg" alt="back 10 seconds">
       <img (click)="toggleReceiverPlay()" class="icon icon__play" [src]="castService.receiverPlayerState === 'paused' ? '/assets/img/play-solid.svg' : '/assets/img/pause-solid.svg'" alt="play">
-      <img class="icon icon__skip" src="/assets/img/forward.svg" alt="skip 10 seconds">
+      <img (click)="forwardReceiver()" class="icon icon__skip" src="/assets/img/forward.svg" alt="skip 10 seconds">
     </div>
 
     <div class="row row__reverse">
