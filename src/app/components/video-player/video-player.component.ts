@@ -20,11 +20,12 @@ import { CastService } from '../../services/cast.service';
 export class VideoPlayerComponent implements OnInit, DoCheck {
   @Input() src: string;
   @Input() provider: string;
-  @ViewChild('player', { static: true }) player: ElementRef;
+  @ViewChild('player', { static: true }) playerEl: ElementRef;
   loading: boolean = true;
   castButton: HTMLButtonElement;
   isCasting: boolean;
   receiverMuted: boolean;
+  player: Plyr;
 
   constructor(public renderer: Renderer2, public castService: CastService) {}
 
@@ -40,22 +41,22 @@ export class VideoPlayerComponent implements OnInit, DoCheck {
     });
 
     this.renderer.setAttribute(
-      this.player.nativeElement,
+      this.playerEl.nativeElement,
       'data-plyr-provider',
       this.provider
     );
     this.renderer.setAttribute(
-      this.player.nativeElement,
+      this.playerEl.nativeElement,
       'data-plyr-embed-id',
       this.src
     );
 
-    const player = new Plyr(this.player.nativeElement, {
+    this.player = new Plyr(this.playerEl.nativeElement, {
       controls: () => playerControls,
     });
 
     // Initialize player + casting config
-    player.on('ready', (event) => {
+    this.player.on('ready', (_) => {
       this.loading = false;
       this.castButton = <HTMLButtonElement>(
         document.getElementById('castButton')
@@ -110,6 +111,10 @@ export class VideoPlayerComponent implements OnInit, DoCheck {
         controls.forEach((item) => {
           item.classList.remove('hide');
         });
+      }
+
+      if (this.player.playing) {
+        this.player.pause();;;
       }
     }
   }
